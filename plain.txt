@@ -1,0 +1,12 @@
+ST101|Ravi Kumar|B.Tech CSE|Python:95.0;SQL:90.0;Maths:92.0;DBMS:96.0|48|50
+ST102|Priya Sharma|B.Tech CSE|Python:85.0;SQL:88.0;Maths:80.0;DBMS:82.0|45|50
+ST103|Aman Verma|B.Tech IT|Python:45.0;SQL:40.0;Maths:48.0;DBMS:42.0|30|50
+ST104|Sneha Reddy|B.Tech IT|Python:90.0;SQL:92.0;Maths:88.0;DBMS:94.0|49|50
+ST105|Kiran Kumar|B.Tech CSE|Python:65.0;SQL:70.0;Maths:60.0;DBMS:68.0|40|50
+ST106|Divya Rao|B.Tech AI|Python:88.0;SQL:85.0;Maths:91.0;DBMS:87.0|46|50
+ST107|Arjun Singh|B.Tech AI|Python:35.0;SQL:42.0;Maths:38.0;DBMS:45.0|25|50
+ST108|Meera Patel|B.Tech CSE|Python:78.0;SQL:75.0;Maths:82.0;DBMS:80.0|42|50
+ST109|Rahul Das|B.Tech IT|Python:55.0;SQL:50.0;Maths:58.0;DBMS:52.0|35|50
+ST110|Ananya Rao|B.Tech AI|Python:92.0;SQL:95.0;Maths:94.0;DBMS:90.0|50|50
+ST111|S.Yashaswi|Chemical Engineering|Heat Transfer:87.0;Thermodynamic:90.0;Chemical Reaction:98.0|45|50
+ST201|Shyam Singha Roy|B.Tech CSE|Python:85.0|38|40
