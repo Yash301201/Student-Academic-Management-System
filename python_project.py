@@ -1,5 +1,133 @@
 FILE_NAME = "plain.txt"
+students = {}
+courses = {
+    # Engineering and technology
+    "B.Tech CSE": (
+        "Python", "SQL", "Maths", "DBMS",
+        "Data Structures", "Operating Systems", "Computer Networks",
+        "Software Engineering", "Web Development", "Cloud Computing",
+    ),
+    "B.Tech IT": (
+        "Python", "SQL", "Maths", "DBMS", "Computer Networks",
+        "Operating Systems", "Web Development", "Information Security",
+        "Cloud Computing", "IT Project Management",
+    ),
+    "B.Tech AI": (
+        "Python", "SQL", "Maths", "DBMS", "Machine Learning",
+        "Probability and Statistics", "Deep Learning",
+        "Natural Language Processing", "Computer Vision", "AI Ethics",
+    ),
+    "Chemical Engineering": (
+        "Heat Transfer", "Thermodynamic", "Chemical Reaction",
+        "Fluid Mechanics", "Mass Transfer", "Process Control",
+        "Plant Design", "Process Safety",
+    ),
+    "B.Tech Data Science": (
+        "Python", "SQL", "Linear Algebra", "Statistics",
+        "Data Visualization", "Machine Learning", "Big Data Analytics",
+        "Data Engineering", "Time Series Analysis",
+    ),
+    "B.Tech Cyber Security": (
+        "Python", "Operating Systems", "Computer Networks",
+        "Cryptography", "Network Security", "Ethical Hacking",
+        "Digital Forensics", "Secure Coding", "Incident Response",
+    ),
+    "B.Tech ECE": (
+        "Circuit Theory", "Analog Electronics", "Digital Electronics",
+        "Signals and Systems", "Communication Systems",
+        "Microprocessors", "VLSI Design", "Embedded Systems",
+    ),
+    "B.Tech EEE": (
+        "Circuit Theory", "Electrical Machines", "Power Systems",
+        "Power Electronics", "Control Systems", "Electrical Measurements",
+        "Renewable Energy", "Electric Drives",
+    ),
+    "B.Tech Mechanical Engineering": (
+        "Engineering Mechanics", "Engineering Drawing",
+        "Thermodynamics", "Fluid Mechanics", "Heat Transfer",
+        "Manufacturing Technology", "Machine Design", "CAD and CAM",
+    ),
+    "B.Tech Civil Engineering": (
+        "Engineering Mechanics", "Surveying", "Structural Analysis",
+        "Geotechnical Engineering", "Concrete Technology",
+        "Transportation Engineering", "Environmental Engineering",
+        "Construction Management",
+    ),
+    "B.Tech Biotechnology": (
+        "Cell Biology", "Biochemistry", "Microbiology", "Genetics",
+        "Molecular Biology", "Bioprocess Engineering",
+        "Immunology", "Bioinformatics",
+    ),
+    "B.Tech Robotics and Automation": (
+        "Python", "Engineering Mechanics", "Control Systems",
+        "Sensors and Actuators", "Embedded Systems", "Robot Kinematics",
+        "Industrial Automation", "Computer Vision",
+    ),
 
+    # Science and computer applications
+    "B.Sc Computer Science": (
+        "Python", "C Programming", "Data Structures", "DBMS",
+        "Operating Systems", "Computer Networks", "Web Development",
+    ),
+    "B.Sc Mathematics": (
+        "Calculus", "Linear Algebra", "Differential Equations",
+        "Probability", "Numerical Methods", "Real Analysis",
+        "Abstract Algebra",
+    ),
+    "B.Sc Physics": (
+        "Classical Mechanics", "Optics", "Electromagnetism",
+        "Thermodynamics", "Quantum Mechanics", "Electronics",
+        "Experimental Physics",
+    ),
+    "B.Sc Chemistry": (
+        "Organic Chemistry", "Inorganic Chemistry", "Physical Chemistry",
+        "Analytical Chemistry", "Environmental Chemistry",
+        "Industrial Chemistry", "Laboratory Techniques",
+    ),
+    "B.Sc Statistics": (
+        "Probability", "Descriptive Statistics", "Statistical Inference",
+        "Regression Analysis", "Sampling Methods",
+        "Design of Experiments", "Time Series Analysis",
+    ),
+    "BCA": (
+        "C Programming", "Python", "Java", "Data Structures",
+        "DBMS", "Computer Networks", "Web Development",
+        "Software Engineering",
+    ),
+    "MCA": (
+        "Advanced Java", "Python", "Advanced DBMS",
+        "Design and Analysis of Algorithms", "Web Application Development",
+        "Cloud Computing", "Software Testing", "Information Security",
+    ),
+
+    # Commerce, management, and humanities
+    "B.Com General": (
+        "Financial Accounting", "Business Economics", "Business Law",
+        "Corporate Accounting", "Cost Accounting", "Income Tax",
+        "Auditing", "Business Communication",
+    ),
+    "B.Com Computer Applications": (
+        "Financial Accounting", "Business Economics", "Business Law",
+        "Computerized Accounting", "SQL", "E-Commerce",
+        "Spreadsheet Applications", "Web Design",
+    ),
+    "BBA": (
+        "Principles of Management", "Business Communication",
+        "Marketing Management", "Human Resource Management",
+        "Financial Management", "Operations Management",
+        "Entrepreneurship",
+    ),
+    "B.A. English": (
+        "British Literature", "Indian Writing in English",
+        "American Literature", "Literary Criticism", "Linguistics",
+        "Creative Writing", "Communication Skills",
+    ),
+    "B.A. Economics": (
+        "Microeconomics", "Macroeconomics", "Public Finance",
+        "Development Economics", "International Economics",
+        "Statistics for Economics", "Econometrics",
+    ),
+}
 class Student:
     def __init__(self, student_id, name, course):
         self.student_id = student_id
@@ -8,77 +136,68 @@ class Student:
         self.marks = {}
         self.attended_classes = 0
         self.total_classes = 0
-
     def average(self):
         return sum(self.marks.values()) / len(self.marks) if self.marks else 0
-
     def grade(self):
         if not self.marks:
             return "Not Available"
-        avg = self.average()
-        if avg >= 90:
-            return "A+"
-        elif avg >= 80:
-            return "A"
-        elif avg >= 70:
-            return "B"
-        elif avg >= 60:
-            return "C"
-        elif avg >= 50:
-            return "D"
+        for minimum, grade in [(90, "A+"), (80, "A"), (70, "B"), (60, "C"), (50, "D")]:
+            if self.average() >= minimum:
+                return grade
         return "F"
-
     def attendance(self):
         if self.total_classes == 0:
             return 0
         return self.attended_classes / self.total_classes * 100
-
-students = {}
-courses = {}
-
 def save_students():
     with open(FILE_NAME, "w", encoding="utf-8") as file:
         for s in students.values():
-            marks = ";".join(
-                f"{subject}:{mark}" for subject, mark in s.marks.items()
-            )
+            marks = ";".join(f"{subject}:{mark}" for subject, mark in s.marks.items())
             file.write(
                 f"{s.student_id}|{s.name}|{s.course}|{marks}|"
                 f"{s.attended_classes}|{s.total_classes}\n"
             )
-
 def load_students():
     try:
         with open(FILE_NAME, "r", encoding="utf-8") as file:
             for line in file:
+                data = line.rstrip("\n").split("|")
+                if len(data) != 6:
+                    continue
+                sid, name, course, marks_text, attended, total = data
+                sid = sid.strip().upper()
+                if not sid or not name or not course or sid in students:
+                    continue
+                s = Student(sid, name, course)
                 try:
-                    data = line.rstrip("\n").split("|")
-                    if len(data) != 6:
+                    s.attended_classes = int(attended)
+                    s.total_classes = int(total)
+                    if not 0 <= s.attended_classes <= s.total_classes:
                         continue
-                    sid, name, course, marks_text, attended, total = data
-                    s = Student(sid.upper(), name, course)
                     if marks_text:
                         for item in marks_text.split(";"):
-                            subject, mark = item.rsplit(":", 1)
-                            mark = float(mark)
+                            subject, value = item.rsplit(":", 1)
+                            mark = float(value)
                             if not subject or not 0 <= mark <= 100:
                                 raise ValueError
                             s.marks[subject] = mark
-                    s.attended_classes = int(attended)
-                    s.total_classes = int(total)
-                    if (not sid or not name or not course
-                            or s.total_classes < 0
-                            or s.attended_classes < 0
-                            or s.attended_classes > s.total_classes
-                            or s.student_id in students):
-                        continue
-                    students[s.student_id] = s
-                    courses.setdefault(course, set()).update(s.marks.keys())
-                except (ValueError, TypeError):
+                except ValueError:
                     print("Skipped an invalid record in the data file.")
+                    continue
+                students[sid] = s
     except FileNotFoundError:
         pass
-
+def select_option(options, prompt):
+    choice = input(prompt).strip().casefold()
+    for number, option in enumerate(options, start=1):
+        if choice in (str(number), option.casefold()):
+            return option
+    return None
+def manage_courses_subjects():
+    print("\n--- COLLEGE COURSES AND SUBJECTS ---")
+    for number, (course, subjects) in enumerate(courses.items(), start=1):
+        print(f"{number}. {course}")
+        print("   Subjects:", ", ".join(subjects))
 def register_student():
     sid = input("Student ID: ").strip().upper()
     if not sid or "|" in sid:
@@ -88,38 +207,34 @@ def register_student():
         print("Student ID already exists!")
         return
     name = input("Student name: ").strip()
-    course = input("Course name: ").strip()
-    if not name or not course or any("|" in value for value in (name, course)):
-        print("Name and course cannot be empty or contain '|'.")
+    if not name or "|" in name:
+        print("Enter a valid student name.")
+        return
+    manage_courses_subjects()
+    course = select_option(courses, "Select a course number or name: ")
+    if course is None:
+        print("Invalid course selection.")
         return
     students[sid] = Student(sid, name, course)
-    courses.setdefault(course, set())
     save_students()
     print("Student registered successfully!")
-
-def manage_courses_subjects():
-    course = input("Course name: ").strip()
-    if not course or "|" in course:
-        print("Enter a valid course name.")
-        return
-    courses.setdefault(course, set())
-    subject = input("Subject name to add: ").strip()
-    if not subject or any(c in subject for c in ":;|"):
-        print("Enter a valid subject name without : ; or |.")
-        return
-    courses[course].add(subject)
-    print(f"Subject '{subject}' added to course '{course}'.")
-    print("Available subjects:", ", ".join(sorted(courses[course])))
-
 def enter_marks():
     sid = input("Student ID: ").strip().upper()
     s = students.get(sid)
     if s is None:
         print("Student not found! Register the student first.")
         return
-    subject = input("Subject name: ").strip()
-    if not subject or any(c in subject for c in ":;|"):
-        print("Enter a valid subject name without : ; or |.")
+    subjects = list(courses.get(s.course, ()))
+    subjects.extend(subject for subject in s.marks if subject not in subjects)
+    if not subjects:
+        print("No subjects are available for this course.")
+        return
+    print(f"\n--- SUBJECTS FOR {s.course} ---")
+    for number, subject in enumerate(subjects, start=1):
+        print(f"{number}. {subject}")
+    subject = select_option(subjects, "Select a subject number or name: ")
+    if subject is None:
+        print("Invalid subject selection.")
         return
     try:
         mark = float(input("Marks (0-100): "))
@@ -130,10 +245,8 @@ def enter_marks():
         print("Enter a valid number!")
         return
     s.marks[subject] = mark
-    courses.setdefault(s.course, set()).add(subject)
     save_students()
     print("Marks saved successfully!")
-
 def update_attendance():
     sid = input("Student ID: ").strip().upper()
     s = students.get(sid)
@@ -143,17 +256,16 @@ def update_attendance():
     try:
         total = int(input("Total classes: "))
         attended = int(input("Classes attended: "))
-        if total < 0 or attended < 0 or attended > total:
-            print("Invalid attendance values!")
-            return
     except ValueError:
         print("Enter whole numbers only!")
+        return
+    if not 0 <= attended <= total:
+        print("Invalid attendance values!")
         return
     s.total_classes = total
     s.attended_classes = attended
     save_students()
     print("Attendance saved successfully!")
-
 def search_student():
     sid = input("Student ID: ").strip().upper()
     s = students.get(sid)
@@ -169,41 +281,34 @@ def search_student():
     print("Grade:", s.grade())
     print(f"Attendance: {s.attendance():.2f}%")
     print(f"Classes attended: {s.attended_classes}/{s.total_classes}")
-
 def show_topper():
     ranked = [s for s in students.values() if s.marks]
     if not ranked:
         print("No marks available to identify a topper.")
         return
     highest = max(s.average() for s in ranked)
-    toppers = [s for s in ranked if s.average() == highest]
     print("\n--- TOPPER(S) ---")
-    for s in toppers:
-        print(f"{s.name} | {s.student_id} | Average: {s.average():.2f}")
-
+    for s in ranked:
+        if s.average() == highest:
+            print(f"{s.name} | {s.student_id} | Average: {s.average():.2f}")
 def show_rankings():
-    ranked = [s for s in students.values() if s.marks]
-    ranked.sort(key=lambda s: s.average(), reverse=True)
+    ranked = sorted(
+        (s for s in students.values() if s.marks),
+        key=lambda s: s.average(), reverse=True
+    )
     if not ranked:
         print("No students have marks yet!")
         return
     print("\n--- STUDENT RANKINGS ---")
     for rank, s in enumerate(ranked, start=1):
-        print(
-            f"{rank}. {s.name} | {s.course} | "
-            f"Average: {s.average():.2f} | Grade: {s.grade()}"
-        )
-
+        print(f"{rank}. {s.name} | {s.course} | Average: {s.average():.2f} | Grade: {s.grade()}")
 def show_low_performers():
-    found = False
     print("\n--- LOW-PERFORMING STUDENTS ---")
-    for s in students.values():
-        if s.marks and s.average() < 50:
-            print(f"{s.name} | Average: {s.average():.2f}")
-            found = True
-    if not found:
+    low_performers = [s for s in students.values() if s.marks and s.average() < 50]
+    for s in low_performers:
+        print(f"{s.name} | Average: {s.average():.2f}")
+    if not low_performers:
         print("No low-performing students found!")
-
 def generate_academic_report():
     if not students:
         print("No student records available.")
@@ -215,49 +320,34 @@ def generate_academic_report():
     show_rankings()
     show_topper()
     show_low_performers()
-
 def main():
     load_students()
     print(f"Loaded {len(students)} student record(s).")
+    actions = {
+        "1": ("Register Student", register_student),
+        "2": ("View College Courses and Subjects", manage_courses_subjects),
+        "3": ("Enter / Update Marks", enter_marks),
+        "4": ("Update Attendance", update_attendance),
+        "5": ("Search Student / View Report", search_student),
+        "6": ("Identify Topper", show_topper),
+        "7": ("Student Rankings", show_rankings),
+        "8": ("Low-Performing Students", show_low_performers),
+        "9": ("Generate Academic Summary Report", generate_academic_report),
+    }
     while True:
-        print("""
-===== STUDENT ACADEMIC MANAGEMENT SYSTEM =====
-1. Register Student
-2. Course and Subject Management
-3. Enter / Update Marks
-4. Update Attendance
-5. Search Student / View Report
-6. Identify Topper
-7. Student Rankings
-8. Low-Performing Students
-9. Generate Academic Summary Report
-10. Exit
-""")
+        print("\n===== STUDENT ACADEMIC MANAGEMENT SYSTEM =====")
+        for number, (label, _) in actions.items():
+            print(f"{number}. {label}")
+        print("10. Exit\n")
         choice = input("Enter your choice (1-10): ").strip()
-        if choice == "1":
-            register_student()
-        elif choice == "2":
-            manage_courses_subjects()
-        elif choice == "3":
-            enter_marks()
-        elif choice == "4":
-            update_attendance()
-        elif choice == "5":
-            search_student()
-        elif choice == "6":
-            show_topper()
-        elif choice == "7":
-            show_rankings()
-        elif choice == "8":
-            show_low_performers()
-        elif choice == "9":
-            generate_academic_report()
-        elif choice == "10":
+        if choice == "10":
             save_students()
             print("All data saved. Goodbye!")
             break
+        if choice in actions:
+            _, action = actions[choice]
+            action()
         else:
             print("Invalid choice! Enter a number from 1 to 10.")
-
 if __name__ == "__main__":
     main()
