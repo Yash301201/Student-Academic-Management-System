@@ -1,6 +1,3 @@
-Failed to create stream fd: Operation not permitted
-Failed to create stream fd: Operation not permitted
-Failed to create stream fd: Operation not permitted
 # Student Academic Management System
 
 A Core Python student-records application with a command-line interface and a Streamlit web interface. It records marks and attendance, calculates grades and averages, and produces individual and summary reports.

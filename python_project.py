@@ -1,6 +1,3 @@
-Failed to create stream fd: Operation not permitted
-Failed to create stream fd: Operation not permitted
-Failed to create stream fd: Operation not permitted
 """Backward-compatible command-line entry point for the student system."""
 
 from student_backend import run_cli

@@ -1,6 +1,3 @@
-Failed to create stream fd: Operation not permitted
-Failed to create stream fd: Operation not permitted
-Failed to create stream fd: Operation not permitted
 """Student academic management model, reliable text storage, and CLI."""
 
 from __future__ import annotations
