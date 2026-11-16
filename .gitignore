@@ -6,3 +6,9 @@ venv/
 .pytest_cache/
 .vscode/
 .idea/
+plain.txt
+plain.txt.bak
+plain.txt.recovery*.bak
+plain.txt.lock
+plain.txt.*.tmp
+.plain.txt.*.tmp

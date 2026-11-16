@@ -1,295 +1,216 @@
-from pathlib import Path
+from __future__ import annotations
 
 import streamlit as st
+
 import python_project as project
+
 
 st.set_page_config(page_title="Student Academic Management System", layout="wide")
 
-# Load plain.txt from the project folder.
-project.FILE_NAME = Path(__file__).resolve().with_name("plain.txt")
-project.students.clear()
-project.load_students()
-
 st.html("""
 <style>
-/* Campus photo with a light overlay so the content stays readable */
 [data-testid="stAppViewContainer"] {
     background-color: #f1f5f9;
-    background-image:
-        linear-gradient(rgba(241, 245, 249, 0.93), rgba(241, 245, 249, 0.97)),
-        url("https://www.clarkconstruction.com/sites/default/files/styles/relevant_markets/public/2023-06/Seismic%20Improvement%20Image.jpg?h=0b709920&itok=Yg64twFk");
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    background-image: linear-gradient(rgba(241,245,249,.94), rgba(241,245,249,.98));
 }
-
-/* Sidebar */
-[data-testid="stSidebar"] {
-    background-color: #e4edf7;
-    border-right: 1px solid #cbd5e1;
-}
-
-/* Library photo behind the page title */
+[data-testid="stSidebar"] { background-color: #e4edf7; border-right: 1px solid #cbd5e1; }
 .academic-banner {
-    padding: clamp(24px, 5vw, 56px);
-    margin-bottom: 20px;
-    border-radius: 16px;
-    background-color: #142e4a;
-    background-image:
-        linear-gradient(90deg, rgba(12, 30, 53, 0.94), rgba(12, 30, 53, 0.65)),
-        url("https://www.cervezasalhambra.com/storage/app/uploads/public/653/a4d/306/653a4d306c510249210933.jpg");
-    background-size: cover;
-    background-position: center;
+    padding: clamp(24px, 5vw, 56px); margin-bottom: 20px; border-radius: 16px;
+    color: white; background: linear-gradient(110deg, #102a43, #176b70);
 }
-
-.academic-banner h1 {
-    color: white;
-    font-size: clamp(1.8rem, 4vw, 3rem);
-    line-height: 1.15;
-    margin: 0;
-    padding: 0;
+.academic-banner h1 { color: white; font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.15; margin: 0; }
+[data-testid="stForm"], [data-testid="stMetric"], [data-testid="stExpander"] {
+    background: white; border: 1px solid #d5dee8; border-radius: 12px;
 }
-
-/* Forms, summary metrics, and course expanders */
-[data-testid="stForm"],
-[data-testid="stMetric"],
-[data-testid="stExpander"] {
-    background-color: white;
-    border: 1px solid #d5dee8;
-    border-radius: 12px;
+[data-testid="stMetric"] { padding: 16px; }
+[data-testid="stButton"] button, [data-testid="stFormSubmitButton"] button {
+    background: #0f766e; color: white; border: 1px solid #0f766e; border-radius: 8px;
 }
-
-[data-testid="stMetric"] {
-    padding: 16px;
-}
-
-/* Action buttons */
-[data-testid="stButton"] button,
-[data-testid="stFormSubmitButton"] button {
-    background-color: #0f766e;
-    color: white;
-    border: 1px solid #0f766e;
-    border-radius: 8px;
-}
-
-[data-testid="stButton"] button:hover,
-[data-testid="stFormSubmitButton"] button:hover {
-    background-color: #115e59;
-    color: white;
+[data-testid="stButton"] button:hover, [data-testid="stFormSubmitButton"] button:hover {
+    background: #115e59; color: white;
 }
 </style>
-
-<div class="academic-banner">
-    <h1>Student Academic Management System</h1>
-</div>
+<div class="academic-banner"><h1>Student Academic Management System</h1></div>
 """)
 
+store = project.StudentStore()
+loaded = store.load()
+
+if loaded.read_error:
+    st.error(loaded.read_error)
+    st.info("The file could not be read. The application is in read-only mode until the storage issue is resolved.")
+    st.stop()
+
+if loaded.issues:
+    st.error("Some rows were rejected. Editing is disabled until you explicitly recover the accepted rows.")
+    for issue in loaded.issues:
+        st.write(f"Row {issue.row}: {issue.reason}")
+    st.caption(f"Recovery first preserves the complete original file as `{store.backup_path.name}`. Rejected rows remain in that backup for manual review.")
+    if st.button("Back up file and recover accepted rows"):
+        try:
+            recovered, backup = store.recover()
+            st.success(f"Recovered {len(recovered.students)} valid record(s). Original file saved to {backup}.")
+            st.rerun()
+        except (OSError, ValueError, project.DataIntegrityError) as error:
+            st.error(f"Recovery failed; the original data file was preserved: {error}")
+
+students = loaded.students
+read_only = bool(loaded.issues)
+
 menu = [
-    "1. Register Student",
-    "2. View College Courses and Subjects",
-    "3. Enter / Update Marks",
-    "4. Update Attendance",
-    "5. Search Student / View Report",
-    "6. Identify Topper",
-    "7. Student Rankings",
-    "8. Low-Performing Students",
-    "9. Generate Academic Summary Report",
+    "Register Student",
+    "View Course and Subject Catalogue",
+    "Enter / Update Marks",
+    "Update Attendance",
+    "Search Student / View Report",
+    "Identify Topper(s)",
+    "Student Rankings",
+    "Low-Performing Students",
+    "Academic Summary",
 ]
+page = st.sidebar.radio("Choose an option", menu, key="menu_option")
 
 
-def show_rankings(ranked_students):
-    st.subheader("Student Rankings")
-    if not ranked_students:
-        st.info("No students have marks yet.")
-        return
+def save_error_message(error: Exception) -> None:
+    st.error(f"Change was not saved: {error}")
+    st.caption("The previous file and the currently displayed records remain unchanged.")
 
+
+def ranking_rows():
     rows = []
-    for rank, student in enumerate(ranked_students, start=1):
+    for rank, student in project.rank_students(students):
+        average = student.average()
         rows.append({
             "Rank": rank,
             "Student ID": student.student_id,
             "Name": student.name,
-            "Course": student.course,
-            "Average": f"{student.average():.2f}",
+            "Programme": student.course,
+            "Entered-mark average": f"{average:.2f}",
             "Grade": student.grade(),
+            "Assessment": project._report_status(student),
         })
-    st.table(rows)
+    return rows
 
 
-def show_toppers(ranked_students):
-    st.subheader("Topper(s)")
-    if not ranked_students:
-        st.info("No marks available to identify a topper.")
+def show_toppers():
+    ranked = project.rank_students(students)
+    if not ranked:
+        st.info("No assessed students are available yet.")
         return
-
-    highest = ranked_students[0].average()
-    for student in ranked_students:
-        if student.average() == highest:
-            st.success(
-                f"{student.name} ({student.student_id}) · Average {highest:.2f}"
-            )
-
-
-def show_low_performers(ranked_students):
-    st.subheader("Low-Performing Students")
-    rows = [
-        {
-            "Student ID": student.student_id,
-            "Name": student.name,
-            "Average": f"{student.average():.2f}",
-        }
-        for student in ranked_students
-        if student.average() < 50
-    ]
-    if rows:
-        st.table(rows)
-    else:
-        st.info("No low-performing students found.")
+    st.caption("Topper comparison uses entered-mark averages and is provisional across different courses and subject sets.")
+    highest = ranked[0][1].average()
+    for _, student in ranked:
+        if student.average() != highest:
+            break
+        st.success(f"{student.name} ({student.student_id}) · {highest:.2f} · {project._report_status(student)}")
 
 
-# if st.session_state.get("exited"):
-#     st.success("Session ended. Your submitted changes are saved.")
-#     if st.button("Reopen App"):
-#         st.session_state.exited = False
-#         st.rerun()
-#     st.stop()
-
-page = st.sidebar.radio("Choose an option", menu, key="menu_option")
-option = menu.index(page) + 1
-
-if option == 1:
-    st.header("Register Student")
-
-    course = st.selectbox("Course or major", list(project.courses))
-    st.write("Subjects — " + ", ".join(project.courses[course]))
-
-    with st.form("register"):
-        student_id = st.text_input("Student ID").strip().upper()
-        name = st.text_input("Student name").strip()
-        submitted = st.form_submit_button("Register Student")
-
+if page == "Register Student":
+    st.header(page)
+    course = st.selectbox("Programme", list(project.courses))
+    st.caption("Subjects: " + ", ".join(project.courses[course]))
+    with st.form("register_student"):
+        student_id = st.text_input("Student ID")
+        name = st.text_input("Student name")
+        submitted = st.form_submit_button("Register Student", disabled=read_only)
     if submitted:
-        if not student_id or not name or "|" in student_id or "|" in name:
-            st.error("Enter a valid student ID and name.")
-        elif student_id in project.students:
-            st.error("Student ID already exists.")
-        else:
-            project.students[student_id] = project.Student(student_id, name, course)
-            project.save_students()
-            st.success(f"{name} registered in {course}.")
+        try:
+            store.add_student(student_id, name, course)
+            st.success(f"{name.strip()} registered and saved in {course}.")
+            st.rerun()
+        except (ValueError, OSError, project.DataIntegrityError) as error:
+            save_error_message(error)
 
-elif option == 2:
-    st.header("College Courses and Subjects")
-    st.write(f"{len(project.courses)} programmes and majors available")
-
+elif page == "View Course and Subject Catalogue":
+    st.header("Course and Subject Catalogue")
+    st.caption(f"Fixed catalogue · {len(project.courses)} programmes. Courses and subjects are predefined and cannot be edited in this application.")
     for number, (course, subjects) in enumerate(project.courses.items(), start=1):
         with st.expander(f"{number}. {course}"):
-            for subject in subjects:
-                st.write(f"• {subject}")
+            st.write(" · ".join(subjects))
 
-elif option in (3, 4, 5):
+elif page in ("Enter / Update Marks", "Update Attendance", "Search Student / View Report"):
     st.header(page)
-    if not project.students:
-        st.info("Register a student first.")
+    if not students:
+        st.info("No accepted student records are available.")
         st.stop()
-
     student_id = st.selectbox(
         "Select a student",
-        list(project.students),
-        format_func=lambda sid: f"{sid} — {project.students[sid].name}",
+        sorted(students),
+        format_func=lambda sid: f"{sid} — {students[sid].name}",
     )
-    student = project.students[student_id]
-    st.write(f"**Course** · {student.course}")
+    student = students[student_id]
+    st.write(f"**Programme:** {student.course}")
 
-    if option == 3:
-        subjects = list(project.courses.get(student.course, ()))
-        subjects.extend(subject for subject in student.marks if subject not in subjects)
-
-        if not subjects:
-            st.info("No subjects are available for this course.")
-            st.stop()
-
-        subject = st.selectbox("Subject", subjects, key=f"subject_{student_id}")
+    if page == "Enter / Update Marks":
+        subject_options = list(project.courses[student.course])
+        subject_options.extend(subject for subject in student.marks if subject not in subject_options)
+        subject = st.selectbox("Subject", subject_options, key=f"subject_{student_id}")
         with st.form(f"marks_{student_id}_{subject}"):
-            mark = st.number_input(
-                "Marks (0–100)",
-                min_value=0.0,
-                max_value=100.0,
-                value=float(student.marks.get(subject, 0)),
-            )
-            submitted = st.form_submit_button("Save Marks")
-
+            mark = st.number_input("Marks (0–100)", min_value=0.0, max_value=100.0, value=float(student.marks.get(subject, 0)))
+            submitted = st.form_submit_button("Save Marks", disabled=read_only)
         if submitted:
-            student.marks[subject] = mark
-            project.save_students()
-            st.success(f"Saved {mark:g} marks for {subject}.")
+            try:
+                store.update_mark(student_id, subject, mark)
+                st.success(f"Marks for {subject} saved successfully.")
+                st.rerun()
+            except (ValueError, OSError, project.DataIntegrityError) as error:
+                save_error_message(error)
 
-    elif option == 4:
+    elif page == "Update Attendance":
         with st.form(f"attendance_{student_id}"):
-            total = st.number_input(
-                "Total classes", min_value=0, value=student.total_classes
-            )
-            attended = st.number_input(
-                "Classes attended", min_value=0, value=student.attended_classes
-            )
-            submitted = st.form_submit_button("Save Attendance")
-
+            total = st.number_input("Total classes", min_value=0, value=student.total_classes, step=1)
+            attended = st.number_input("Classes attended", min_value=0, value=student.attended_classes, step=1)
+            submitted = st.form_submit_button("Save Attendance", disabled=read_only)
         if submitted:
-            if attended > total:
-                st.error("Classes attended cannot exceed total classes.")
-            else:
-                student.total_classes = total
-                student.attended_classes = attended
-                project.save_students()
-                st.success(f"Attendance saved · {student.attendance():.2f}%")
+            try:
+                store.update_attendance(student_id, int(attended), int(total))
+                st.success("Attendance saved successfully.")
+                st.rerun()
+            except (ValueError, OSError, project.DataIntegrityError) as error:
+                save_error_message(error)
 
     else:
         st.subheader(f"{student.name} ({student.student_id})")
-        average, grade, attendance = st.columns(3)
-        average.metric("Average", f"{student.average():.2f}" if student.marks else "—")
-        grade.metric("Grade", student.grade())
-        attendance.metric("Attendance", f"{student.attendance():.2f}%")
+        average_value = student.average()
+        attendance_value = student.attendance()
+        average_col, grade_col, attendance_col = st.columns(3)
+        average_col.metric("Entered-mark average", f"{average_value:.2f}" if average_value is not None else "N/A")
+        grade_col.metric("Grade", student.grade())
+        attendance_col.metric("Attendance", f"{attendance_value:.2f}%" if attendance_value is not None else "Not recorded")
+        st.caption(project._report_status(student))
         st.write(f"Classes attended · {student.attended_classes}/{student.total_classes}")
-
         if student.marks:
-            st.table([
-                {"Subject": subject, "Marks": f"{mark:g}"}
-                for subject, mark in student.marks.items()
-            ])
+            st.table([{"Subject": subject, "Marks": f"{mark:g}"} for subject, mark in student.marks.items()])
         else:
-            st.info("No marks entered yet.")
+            st.info("Marks not recorded.")
 
-elif option in (6, 7, 8, 9):
-    ranked_students = sorted(
-        (student for student in project.students.values() if student.marks),
-        key=lambda student: student.average(),
-        reverse=True,
-    )
-
-    if option == 6:
-        show_toppers(ranked_students)
-    elif option == 7:
-        show_rankings(ranked_students)
-    elif option == 8:
-        show_low_performers(ranked_students)
+elif page in ("Identify Topper(s)", "Student Rankings", "Low-Performing Students", "Academic Summary"):
+    st.header(page)
+    if page == "Identify Topper(s)":
+        show_toppers()
+    elif page == "Student Rankings":
+        st.caption("Provisional overall comparison: averages use marks entered so far. Different course or subject sets are not directly comparable as final results.")
+        rows = ranking_rows()
+        st.dataframe(rows, use_container_width=True, hide_index=True) if rows else st.info("No assessed students are available yet.")
+    elif page == "Low-Performing Students":
+        rows = [row for row in ranking_rows() if float(row["Entered-mark average"]) < 50]
+        st.caption("Rule: assessed average below 50. Students with no marks are excluded.")
+        st.dataframe(rows, use_container_width=True, hide_index=True) if rows else st.info("No assessed students have an average below 50.")
     else:
-        st.header("Academic Summary")
-        total, courses, with_marks = st.columns(3)
-        total.metric("Total students", len(project.students))
-        courses.metric(
-            "Courses with enrolled students",
-            len({student.course for student in project.students.values()}),
-        )
-        with_marks.metric("Students with marks", len(ranked_students))
-        show_rankings(ranked_students)
-        show_toppers(ranked_students)
-        show_low_performers(ranked_students)
-
-# else:
-#     st.header("Exit")
-#     st.info("Registration, marks, and attendance are saved when you submit each form.")
-
-#     if st.button("End Session"):
-#         st.session_state.exited = True
-#         del st.session_state["menu_option"]
-#         st.rerun()
+        total, programmes, assessed, unassessed = st.columns(4)
+        total.metric("Students", len(students))
+        programmes.metric("Programmes represented", len({student.course for student in students.values()}))
+        assessed.metric("With marks", sum(bool(student.marks) for student in students.values()))
+        unassessed.metric("Without marks", sum(not student.marks for student in students.values()))
+        st.caption("Overall averages and rankings are provisional, use entered marks only, and may compare different subject sets.")
+        rows = ranking_rows()
+        if rows:
+            st.subheader("Provisional rankings")
+            st.dataframe(rows, use_container_width=True, hide_index=True)
+            st.subheader("Topper(s)")
+            show_toppers()
+            st.subheader("Low performers · average below 50")
+            low = [row for row in rows if float(row["Entered-mark average"]) < 50]
+            st.dataframe(low, use_container_width=True, hide_index=True) if low else st.info("No assessed students have an average below 50.")
+        else:
+            st.info("No assessed students are available yet.")
