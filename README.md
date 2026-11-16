@@ -1,3 +1,6 @@
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
 # Student Academic Management System
 
 A Core Python student-records application with a command-line interface and a Streamlit web interface. It records marks and attendance, calculates grades and averages, and produces individual and summary reports.
@@ -32,7 +35,7 @@ To use the command-line interface:
 python python_project.py
 ```
 
-Both entry points resolve `plain.txt` beside `python_project.py`, regardless of the current working directory. The file is created when the first student is registered. To load the fictional demo records first, copy `plain.txt.example` to `plain.txt`:
+Both entry points resolve `plain.txt` beside `student_backend.py`, regardless of the current working directory. The file is created when the first student is registered. To load the fictional demo records first, copy `plain.txt.example` to `plain.txt`:
 
 ```bash
 # macOS / Linux
@@ -76,8 +79,9 @@ The catalogue is fixed in code and provides course selection and subject lists. 
 
 | File | Purpose |
 | --- | --- |
-| `python_project.py` | Student model, validation, file storage, ranking policy, and CLI |
-| `streamlit_app.py` | Streamlit interface using the shared storage service |
+| `python_project.py` | CLI entry point |
+| `student_backend.py` | Student model, validation, file storage, ranking policy, and shared service |
+| `streamlit_app.py` | Streamlit interface using the shared backend service |
 | `plain.txt.example` | Fictional demo fixture; copy to the ignored runtime file to use it |
 | `plain.txt` | Local runtime data file; created beside the backend and ignored by Git |
 | `test_storage.py` | Focused automated tests for validation, recovery, persistence, and reports |

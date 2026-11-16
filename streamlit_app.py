@@ -1,8 +1,11 @@
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
 from __future__ import annotations
 
 import streamlit as st
 
-import python_project as project
+import student_backend as project
 
 
 st.set_page_config(page_title="Student Academic Management System", layout="wide")
