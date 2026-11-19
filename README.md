@@ -8,6 +8,8 @@ A Core Python student-records application with a command-line interface and a St
   <a href="https://github.com/Yash301201/Student-Academic-Management-System"><strong>Browse the source</strong></a>
 </p>
 
+For a presentation-ready architecture, implementation details, validation rules, and interview explanation, see [Project Overview](docs/PROJECT_OVERVIEW.md).
+
 ## Features
 
 - Register students in a predefined catalogue of **24 programmes**.
