@@ -45,7 +45,7 @@ if loaded.issues:
     st.error("Some rows were rejected. Editing is disabled until you explicitly recover the accepted rows.")
     for issue in loaded.issues:
         st.write(f"Row {issue.row}: {issue.reason}")
-    st.caption(f"Recovery first preserves the complete original file as `{store.backup_path.name}`. Rejected rows remain in that backup for manual review.")
+    st.caption(f"Recovery first preserves the complete original file as `{store.recovery_backup_path.name}`. Rejected rows remain in that recovery backup for manual review.")
     if st.button("Back up file and recover accepted rows"):
         try:
             recovered, backup = store.recover()
