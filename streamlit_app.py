@@ -191,11 +191,17 @@ elif page in ("Identify Topper(s)", "Student Rankings", "Low-Performing Students
     elif page == "Student Rankings":
         st.caption("Provisional overall comparison: averages use marks entered so far. Different course or subject sets are not directly comparable as final results.")
         rows = ranking_rows()
-        st.dataframe(rows, use_container_width=True, hide_index=True) if rows else st.info("No assessed students are available yet.")
+        if rows:
+            st.dataframe(rows, width="stretch", hide_index=True)
+        else:
+            st.info("No assessed students are available yet.")
     elif page == "Low-Performing Students":
         rows = [row for row in ranking_rows() if float(row["Entered-mark average"]) < 50]
         st.caption("Rule: assessed average below 50. Students with no marks are excluded.")
-        st.dataframe(rows, use_container_width=True, hide_index=True) if rows else st.info("No assessed students have an average below 50.")
+        if rows:
+            st.dataframe(rows, width="stretch", hide_index=True)
+        else:
+            st.info("No assessed students have an average below 50.")
     else:
         total, programmes, assessed, unassessed = st.columns(4)
         total.metric("Students", len(students))
@@ -206,11 +212,14 @@ elif page in ("Identify Topper(s)", "Student Rankings", "Low-Performing Students
         rows = ranking_rows()
         if rows:
             st.subheader("Provisional rankings")
-            st.dataframe(rows, use_container_width=True, hide_index=True)
+            st.dataframe(rows, width="stretch", hide_index=True)
             st.subheader("Topper(s)")
             show_toppers()
             st.subheader("Low performers · average below 50")
             low = [row for row in rows if float(row["Entered-mark average"]) < 50]
-            st.dataframe(low, use_container_width=True, hide_index=True) if low else st.info("No assessed students have an average below 50.")
+            if low:
+                st.dataframe(low, width="stretch", hide_index=True)
+            else:
+                st.info("No assessed students have an average below 50.")
         else:
             st.info("No assessed students are available yet.")
